@@ -18,11 +18,11 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 
 ### Agent's session lifecycle Events
 
-- `ON_AUTH`: Authenticate a session.
-- `ON_INIT`: Initialize a session.
-- `ON_CLOSE`: Close a session.
-- `ON_QUERY`: Execute a query.
-- `ON_STORE`: Store documents.
+- `on_auth`: Authenticate a session.
+- `on_init`: Initialize a session.
+- `on_close`: Close a session.
+- `on_query`: Execute a query.
+- `on_store`: Store documents.
 
 ---
 
@@ -35,26 +35,78 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 ### Installation
 
 1. Install kiss-ai-stack-server package:
-   ```bash
-   pip install kiss-ai-stack-server
-   ```
+```bash
+pip install kiss-ai-stack-server
+```
+
 2. Set environment variables file
-   ```bash
-   # .env
-    ACCESS_TOKEN_SECRET_KEY = "your-secure-random-secret-key"
-    ACCESS_TOKEN_ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
+```shell
+ACCESS_TOKEN_SECRET_KEY = "your-secure-random-secret-key"
+ACCESS_TOKEN_ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-    SESSION_DB_URL="sqlite://sessions.db"
-   ```
+SESSION_DB_URL="sqlite://sessions.db"
 
-3. Run the server:
-   ```bash
-   from kiss_ai_stack_server import bootstrap_session_schema, agent_server
-   
-   
-   ```
+```
+3. Add agent bootstrapping yaml configuration
+```yaml
+agent:
+  classifier: # Required for tool classification
+    name: classifier
+    role: classify tools for given queries
+    kind: prompt  # Choose from 'rag' or 'prompt'
+    ai_client:
+      provider: openai
+      model: gpt-4
+      api_key: <your-api-key>
 
+  tools:
+    - name: general_queries
+      role: process other queries if no suitable tool is found.
+      kind: prompt
+      ai_client:
+        provider: openai
+        model: gpt-4
+        api_key: <your-api-key>
+
+    - name: document_tool
+      role: process documents and provide answers based on them.
+      kind: rag  # Retrieval-Augmented Generation
+      embeddings: text-embedding-ada-002
+      ai_client:
+        provider: openai
+        model: gpt-4
+        api_key: <your-api-key>
+
+  vector_db:
+    provider: chroma
+    kind: remote # Choose in-memory, storage or remote options.
+    host: 0.0.0.0
+    port: 8000
+    secure: false
+```
+
+4. Start the server:
+```python
+import asyncio
+import uvicorn
+
+from kiss_ai_stack_server import bootstrap_session_schema, agent_server, get_agent_server_app
+
+
+async def start_server():
+    await bootstrap_session_schema()
+    server_app = get_agent_server_app()
+    await agent_server(
+        config=uvicorn.Config(
+            app=server_app,
+            host='0.0.0.0',
+            port=8080
+        )
+    ).serve()
+
+asyncio.run(start_server())
+```
 ---
 
 ## REST API Endpoints
@@ -66,16 +118,17 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 **Request Body:**
 ```json
 {
-  "client_id": "string",
-  "client_secret": "string"
+   "scope": "string", // `temporary` or `persistent` to create a new session
+   "client_id": "string", // client_id and client_secret from previous session; for`persistant` scope only
+   "client_secret": "string"
 }
 ```
 **Response:**
 ```json
 {
-  "session_id": "string",
-  "access_token": "string",
-  "expires_in": 3600
+   "access_token": "string",
+   "client_id": "string", // for a `persistent` session keep the client_id and client_secret saved to refresh the access token
+   "client_secret": "secret"
 }
 ```
 
@@ -87,14 +140,15 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 **Method:** `POST`  
 **Query Parameter:**
 - `action` (required): Action to perform on the session (`init` or `close`).
+- `init` - Will initialize the Agent session
+- `close` - Will close the active session, if the scope is `temporary` stored docs will be cleaned
 
 **Request Body:**
 ```json
 {
-  "session_id": "string"
+  "query": "Optional[string]" // Your greeting message perhaps
 }
 ```
-**Response:** Session-related details or status.
 
 ---
 
@@ -105,13 +159,10 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 **Request Body:**
 ```json
 {
-  "query": "string",
-  "parameters": {
-    "key": "value"
-  }
+  "query": "string"
 }
 ```
-**Response:** Query results.
+**Response:** Generated answer.
 
 ---
 
@@ -122,13 +173,13 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 **Request Body:**
 ```json
 {
-  "documents": [
-    {
-      "id": "string",
-      "content": "string",
-      "metadata": {}
-    }
-  ]
+   "files": [
+      {
+         "name": "string", // file name
+         "content": "string" // base64 encoded file data
+      }, 
+      "metadata": "Dictionary" // Additional metadata
+   ]
 }
 ```
 **Response:** Document storage confirmation.
@@ -142,40 +193,28 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 ### Workflow
 
 1. Establish a WebSocket connection:
-   ```bash
-   ws://localhost:8080/ws
-   ```
+```bash
+ws://localhost:8080/ws
+```
 
 2. Send a message:
-   ```json
-   {
-     "event": "ON_QUERY",
-     "data": {
-       "query": "example query",
-       "parameters": {
-         "key": "value"
-       }
-     }
+```json
+{
+   "event": "life cycle event",
+   "data": {
+      "query": "example query"
    }
-   ```
+}
+```
 
 3. Receive a response:
-   ```json
-   {
-     "event": "ON_QUERY",
-     "result": {
-       "response_key": "response_value"
-     }
-   }
-   ```
-
-
-
-## Contributing
-
-Contributions are welcome! Feel free to fork the repository and submit a pull request.
-
----
+```json
+{
+   "agent_id": "response_value",
+   "result": "",
+   "extras": "Dictionary"
+} 
+```
 
 ## License
 
