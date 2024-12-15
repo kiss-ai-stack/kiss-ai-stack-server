@@ -1,6 +1,6 @@
 from typing import Callable, Dict
 
-from models.enums.events import ServerEvent
+from kiss_ai_stack_types.enums import ServerEvent
 
 event_handlers: Dict[str, Callable] = {}
 
@@ -23,6 +23,7 @@ def on_init(func: Callable):
 def on_query(func: Callable):
     event_handlers[ServerEvent.ON_QUERY] = func
     return func
+
 
 def on_store(func: Callable):
     event_handlers[ServerEvent.ON_STORE] = func

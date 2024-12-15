@@ -1,4 +1,11 @@
 fastapi~=0.115.5
 uvicorn~=0.32.1
+websockets~=14.1
 
-kiss_ai_stack_core
+kiss-ai-stack-types~=0.1.0a2
+kiss_ai_stack_core~=0.1.0a10
+jose~=1.0.0
+bcrypt~=4.2.1
+tortoise-orm~=0.22.2
+PyJWT~=2.10.1
+starlette~=0.41.3
