@@ -51,10 +51,10 @@ SESSION_DB_URL="sqlite://sessions.db"
 3. Add agent bootstrapping yaml configuration
 ```yaml
 agent:
-  classifier: # Required for tool classification
-    name: classifier
+  decision_maker: # Required for tool classification
+    name: decision_maker
     role: classify tools for given queries
-    kind: prompt  # Choose from 'rag' or 'prompt'
+    kind: prompt  # Choose from 'rag' or 'prompt', decision maker only supports 'prompt'
     ai_client:
       provider: openai
       model: gpt-4
