@@ -1,4 +1,3 @@
-import asyncio
 from typing import Optional
 
 import uvicorn
@@ -18,7 +17,7 @@ async def bootstrap_session_schema():
     await SessionService.build_schema()
 
 
-def get_agent_server_app():
+def get_stack_server_app():
     app = FastAPI(
         title='KISS AI Stack Server',
         description='Enterprise-grade server for the KISS AI Stack',
@@ -34,7 +33,7 @@ def get_agent_server_app():
     return app
 
 
-def agent_server(config: Optional[uvicorn.Config] = None) -> uvicorn.Server:
+def stacks_server(config: Optional[uvicorn.Config] = None) -> uvicorn.Server:
     """
     Prepare the Uvicorn server instance for execution
 
@@ -44,7 +43,7 @@ def agent_server(config: Optional[uvicorn.Config] = None) -> uvicorn.Server:
     # Default configuration for Uvicorn server if not provided
     if config is None:
         config = uvicorn.Config(
-            app=get_agent_server_app(),
+            app=get_stack_server_app(),
             host='0.0.0.0',
             port=8080,
             reload=True,

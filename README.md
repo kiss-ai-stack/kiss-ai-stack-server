@@ -2,21 +2,20 @@
   <img src="https://kiss-ai-stack.github.io/kissaistack.svg" alt="KISS AI Stack Banner" style="max-width: auto; height: 250px">
 </div>
 
-
 # KISS AI Stack - Server
 
-The KISS AI Stack Server is an server stub designed to support RESTful and WebSocket APIs for handling AI-agent sessions with kiss-ai-stack-core tasks like agent lifecycle management, query execution, and document storage.
+The KISS AI Stack Server is a server stub designed to support RESTful and WebSocket APIs for handling AI-stack sessions with kiss-ai-stack-core tasks like stack lifecycle management, query execution, and document storage.
 
 ## Features
 
 - REST API for authentication, session actions, queries, and document storage.
 - WebSocket API for real-time, event-driven interactions.
 - Built-in persistent and temporary session management.
-- Flexible architecture to handle server events though AI agent's lifecycle events.
+- Flexible architecture to handle server events through AI stack's lifecycle events.
 
 ---
 
-### Agent's session lifecycle Events
+### Stack's session lifecycle Events
 
 - `on_auth`: Authenticate a session.
 - `on_init`: Initialize a session.
@@ -36,7 +35,7 @@ The KISS AI Stack Server is an server stub designed to support RESTful and WebSo
 
 1. Install kiss-ai-stack-server package:
 ```bash
-pip install kiss-ai-stack-server
+pip install kiss-ai-stack-server~=0.1.0-alpha20
 ```
 
 2. Set environment variables file
@@ -47,10 +46,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 SESSION_DB_URL="sqlite://sessions.db"
 
+LOG_LEVEL=INFO
+
 ```
-3. Add agent bootstrapping yaml configuration
+3. Add stack bootstrapping yaml configuration
 ```yaml
-agent:
+stack:
   decision_maker: # Required for tool classification
     name: decision_maker
     role: classify tools for given queries
@@ -91,13 +92,13 @@ agent:
 import asyncio
 import uvicorn
 
-from kiss_ai_stack_server import bootstrap_session_schema, agent_server, get_agent_server_app
+from kiss_ai_stack_server import bootstrap_session_schema, stacks_server, get_stack_server_app
 
 
 async def start_server():
     await bootstrap_session_schema()
-    server_app = get_agent_server_app()
-    await agent_server(
+    server_app = get_stack_server_app()
+    await stacks_server(
         config=uvicorn.Config(
             app=server_app,
             host='0.0.0.0',
@@ -140,7 +141,7 @@ asyncio.run(start_server())
 **Method:** `POST`  
 **Query Parameter:**
 - `action` (required): Action to perform on the session (`init` or `close`).
-- `init` - Will initialize the Agent session
+- `init` - Will initialize the stack session
 - `close` - Will close the active session, if the scope is `temporary` stored docs will be cleaned
 
 **Request Body:**
@@ -177,7 +178,7 @@ asyncio.run(start_server())
       {
          "name": "string", // file name
          "content": "string" // base64 encoded file data
-      }, 
+      },
       "metadata": "Dictionary" // Additional metadata
    ]
 }
@@ -210,12 +211,13 @@ ws://localhost:8080/ws
 3. Receive a response:
 ```json
 {
-   "agent_id": "response_value",
+   "stack_id": "response_value",
    "result": "",
    "extras": "Dictionary"
-} 
+}
 ```
 
 ## License
 
 This project is licensed under the MIT License.
+

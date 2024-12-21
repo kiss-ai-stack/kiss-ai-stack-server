@@ -164,3 +164,4 @@ cython_debug/
 # other
 sessions.db*
 stack.yaml
+main.py

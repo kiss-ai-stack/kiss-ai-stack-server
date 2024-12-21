@@ -8,7 +8,7 @@ from functools import lru_cache
 @lru_cache(maxsize=1)
 def temp_file_manager():
     """
-    Cached singleton factory function for AIAgentService.
+    Cached singleton factory function for Stacks server.
     """
     return TemporaryFileManager()
 

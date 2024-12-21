@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="kiss-ai-stack-server",
-    version="0.1.0-alpha17",
-    description="KISS AI Stack's Server stub - Simplify AI Agent Development",
+    version="0.1.0-alpha20",
+    description="KISS AI Stack's Server stub",
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     author="KISS AI Stack, Lahiru Pathirage",
@@ -20,8 +20,8 @@ setup(
         "tortoise-orm~=0.22.2",
         "PyJWT~=2.10.1",
         "starlette~=0.41.3",
-        "kiss-ai-stack-types~=0.1.0a2",
-        "kiss_ai_stack_core~=0.1.0a10"
+        "kiss-ai-stack-types~=0.1.0a4",
+        "kiss_ai_stack_core~=0.1.0a28"
     ],
     keywords=["ai", "agent", "machine-learning", "llm", "document-processing"],
     classifiers=[
